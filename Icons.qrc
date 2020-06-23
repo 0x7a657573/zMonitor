@@ -1,0 +1,10 @@
+<RCC>
+    <qresource prefix="/icon">
+        <file alias="refresh">icon/icons8-refresh-16.png</file>
+        <file alias="disconnect">icon/icons8-disconnected-16.png</file>
+        <file alias="connect">icon/icons8-connected-16.png</file>
+        <file alias="disconnect30">icon/icons8-disconnected-30.png</file>
+        <file alias="update">icon/icons8-available-updates-30.png</file>
+        <file alias="connect30">icon/icons8-connected-30.png</file>
+    </qresource>
+</RCC>

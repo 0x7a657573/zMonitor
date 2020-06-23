@@ -19,10 +19,12 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES += \
     main.cpp \
     mainwindow.cpp \
+    xdebuger/xdbg.cpp \
     xdebuger/xdebug.cpp
 
 HEADERS += \
     mainwindow.h \
+    xdebuger/xdbg.h \
     xdebuger/xdebug.h
 
 FORMS += \
@@ -32,3 +34,6 @@ FORMS += \
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
+
+RESOURCES += \
+    Icons.qrc
