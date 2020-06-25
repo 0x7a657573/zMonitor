@@ -16,6 +16,13 @@
 #include <QLabel>
 #include <QTextEdit>
 #include <QListView>
+#include "xdbg.h"
+#include <QList>
+#include <QTimer>
+#include <QSettings>
+
+#define StartInterPreter    0xC8
+#define EndInterPreter      0xFA
 
 class Xdebuger : public QWidget
 {
@@ -30,14 +37,22 @@ private slots:
     void handel_LoadSerialPort();
     void handel_ConDisConAction();
     void handel_DataReady();
+    void handel_clearLogs();
+    void handel_TimerUpdate();
+    void handel_viewChange(bool newstatus);
 
 private:
     void LoadToolBar(QHBoxLayout *lay);
     void LoadMainView(QHBoxLayout *lay);
     void LoadStatusBar(QHBoxLayout *lay);
     void LockPortOpen(bool Look);
+    void ProsessIncomingData(QByteArray &data);
+    void IncertDataRow(int Id,QString &text);
 
 protected:
+
+    QSettings xSettings;
+
     /*Main Layout*/
     QVBoxLayout *Layout;
     QHBoxLayout *TopLay;
@@ -51,15 +66,17 @@ protected:
     QComboBox *xBaud;
     QPushButton *btnRefresh;
     QPushButton *btnConnect;
+    unsigned int TotlaRx;
+    QTimer *Timer;
 
     /*Status Bar*/
     QStatusBar  *Status;
     QLabel      *StatusIconLbl;
     QLabel      *StatusMessageLbl;
+    QLabel      *StatusStatisticsLbl;
 
     /*main view*/
-    QTextEdit   *MainEd;
-    QListView   *Listvu;
+    QList<xdbg*> ViewList;
 
 };
 

@@ -6,5 +6,14 @@
         <file alias="disconnect30">icon/icons8-disconnected-30.png</file>
         <file alias="update">icon/icons8-available-updates-30.png</file>
         <file alias="connect30">icon/icons8-connected-30.png</file>
+        <file alias="clean30">icon/icons8-broom-30.png</file>
+        <file alias="copy30">icon/icons8-copy-30.png</file>
+        <file alias="view30">icon/icons8-grid-view-30.png</file>
+        <file alias="checked30">icon/icons8-checked-30.png</file>
+        <file alias="cancel30">icon/icons8-cancel-30.png</file>
+        <file alias="delete30">icon/icons8-delete-30.png</file>
+        <file alias="check30">icon/icons8-checkmark-30.png</file>
+        <file alias="textcolor30">icon/icons8-text-color-30.png</file>
+        <file alias="fillcolor30">icon/icons8-fill-color-30.png</file>
     </qresource>
 </RCC>
