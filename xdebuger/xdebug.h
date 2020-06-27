@@ -40,6 +40,7 @@ private slots:
     void handel_clearLogs();
     void handel_TimerUpdate();
     void handel_viewChange(bool newstatus);
+    void handel_ResetSetting();
 
 private:
     void LoadToolBar(QHBoxLayout *lay);
@@ -51,7 +52,7 @@ private:
 
 protected:
 
-    QSettings xSettings;
+    QSettings *xSettings;
 
     /*Main Layout*/
     QVBoxLayout *Layout;

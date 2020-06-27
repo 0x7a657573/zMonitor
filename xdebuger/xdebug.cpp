@@ -10,10 +10,12 @@
 #include <QMessageBox>
 #include <QMenu>
 #include <QAction>
-
+#include <QMessageBox>
+#include <QDialogButtonBox>
 
 Xdebuger::Xdebuger(QWidget *parent) : QWidget(parent)
 {
+    xSettings = new QSettings("config.ini",QSettings::IniFormat,this);
     setAttribute(Qt::WA_StaticContents);
 
     Layout = new QVBoxLayout(this);
@@ -56,9 +58,9 @@ void Xdebuger::LoadMainView(QHBoxLayout *lay)
         QHBoxLayout *hLay = new QHBoxLayout();
         for(int j=0;j<4;j++)
         {
-            xdbg *gdb = new xdbg(this);
+            xdbg *gdb = new xdbg(xSettings,this,i*4+j);
             hLay->addWidget(gdb);
-            if(xSettings.value("view/"+QString::number(i*4+j)).toString() == "true")
+            if(xSettings->value("view/"+QString::number(i*4+j)).toString() == "true")
             {
                 gdb->setHidden(true);
             }
@@ -117,6 +119,17 @@ void Xdebuger::LoadToolBar(QHBoxLayout *lay)
         btnView->setToolTip(tr("Enable/Disable Log View"));
         //connect(btnClean,SIGNAL(clicked()),this,SLOT(handel_clearLogs()));
 
+        /*Reset Setting btn*/
+     QPushButton *btnResetSetting = new QPushButton(this);
+        btnResetSetting->setAutoFillBackground(true);
+        btnResetSetting->setIcon(QIcon(":/icon/restart30"));
+        btnResetSetting->setIconSize(QSize(20,20));
+        btnResetSetting->setFixedSize(30,30);
+        btnResetSetting->setToolTip(tr("Reset All Setting"));
+        connect(btnResetSetting,SIGNAL(clicked()),this,SLOT(handel_ResetSetting()));
+
+
+
         QMenu *menu = new QMenu(this);
         QVBoxLayout *xlayout = new QVBoxLayout(menu);
 
@@ -130,7 +143,7 @@ void Xdebuger::LoadToolBar(QHBoxLayout *lay)
 
                 xbtn->setCheckable(true);
                 xbtn->setProperty("id", QString::number(i*4+j));
-                if(xSettings.value("view/"+QString::number(i*4+j)).toString() == "true")
+                if(xSettings->value("view/"+QString::number(i*4+j)).toString() == "true")
                 {
                     xbtn->setIcon(QIcon(":/icon/delete30"));
                     xbtn->setIconSize(QSize(16,16));
@@ -183,6 +196,7 @@ void Xdebuger::LoadToolBar(QHBoxLayout *lay)
      lay->addWidget(btnConnect);
      lay->addWidget(btnClean);
      lay->addWidget(btnView);
+     lay->addWidget(btnResetSetting);
      TopLay->setAlignment(Qt::AlignLeft);
 }
 
@@ -298,9 +312,13 @@ void Xdebuger::ProsessIncomingData(QByteArray &data)
 void Xdebuger::IncertDataRow(int Id,QString &text)
 {
     Id--; /*Start From 0*/
-    //qDebug() << Id << text;
-    if(ViewList.count()>Id)
-        ViewList[Id]->addItem(text);
+    foreach (xdbg* item, ViewList)
+    {
+        if(item->getID()==Id)
+        {
+            item->addItem(text);
+        }
+    }
 }
 
 void Xdebuger::handel_clearLogs()
@@ -310,6 +328,20 @@ void Xdebuger::handel_clearLogs()
     {
         item->clear();
     }
+}
+
+void Xdebuger::handel_ResetSetting()
+{
+    int result = QMessageBox::question(this,tr("are you sure !!!"),tr("Are you sure want to reset your setting ?"),QDialogButtonBox::Yes,QDialogButtonBox::No);
+    if(result != QDialogButtonBox::Yes)
+        return;
+
+    foreach( xdbg* item, ViewList )
+    {
+        item->ResetSetting();
+    }
+
+    QMessageBox::information(this,tr("Reset setting"),tr("Reset All Setting."),QDialogButtonBox::Ok);
 }
 
 void Xdebuger::handel_TimerUpdate()
@@ -331,7 +363,7 @@ void Xdebuger::handel_viewChange(bool newstatus)
     xbtn->setIconSize(QSize(16,16));
 
     ViewList[xbtn->property("id").toInt()]->setHidden(newstatus);
-    xSettings.setValue("view/"+xbtn->property("id").toString(),newstatus ? "true":"false");
+    xSettings->setValue("view/"+xbtn->property("id").toString(),newstatus ? "true":"false");
 }
 
 Xdebuger::~Xdebuger()

@@ -11,19 +11,24 @@
 #include "mylistwidget.h"
 #include <QLabel>
 #include <QColorDialog>
+#include <QSettings>
+
+#define IDSign  0x2e756400
 
 class xdbg : public QWidget
 {
     Q_OBJECT
 public:
-    explicit xdbg(QWidget *parent = nullptr);
-
+    explicit xdbg(QSettings *Setting,QWidget *parent = nullptr,int id = 0);
+    void setID(int id);
     void addItem(QString Item);
-
+    int getID();
+    void ResetSetting();
 
 public slots:
     void handel_mousePressEvent(QMouseEvent *event);
     void handel_SetColor(const QColor &color);
+    void handel_ChangeID();
 
     void clear();
     void CopyToClipboard();
@@ -32,6 +37,10 @@ public slots:
 
 signals:
 protected:
+    QString xKey;
+    QSettings *xSetting;
+    int xID;
+    int sID;
     MyListWidget   *ListView;
     QVBoxLayout *MayLayout;
     int MaxRow;
@@ -41,6 +50,8 @@ protected:
     /*PopUp*/
     QMenu *PopMenu;
     QColorDialog    ColorDialog;
+
+    void LoadSetting();
 };
 
 #endif // XDBG_H

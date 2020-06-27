@@ -15,5 +15,8 @@
         <file alias="check30">icon/icons8-checkmark-30.png</file>
         <file alias="textcolor30">icon/icons8-text-color-30.png</file>
         <file alias="fillcolor30">icon/icons8-fill-color-30.png</file>
+        <file alias="terminal">icon/zterminal.png</file>
+        <file alias="tag30">icon/icons8-price-tag-30.png</file>
+        <file alias="restart30">icon/icons8-restart-30.png</file>
     </qresource>
 </RCC>

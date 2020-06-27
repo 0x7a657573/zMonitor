@@ -8,6 +8,9 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
+    setWindowIcon(QIcon(":/icon/terminal"));
+    setWindowTitle("zMonitor");
+
     Xdebuger *xdbg = new Xdebuger(this);
     setCentralWidget(xdbg);
     centralWidget()->setMouseTracking(true);
