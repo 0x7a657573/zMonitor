@@ -12,6 +12,8 @@
 #include <QAction>
 #include <QMessageBox>
 #include <QDialogButtonBox>
+#include <QSpacerItem>
+#include <QSplashScreen>
 
 Xdebuger::Xdebuger(QWidget *parent) : QWidget(parent)
 {
@@ -128,7 +130,14 @@ void Xdebuger::LoadToolBar(QHBoxLayout *lay)
         btnResetSetting->setToolTip(tr("Reset All Setting"));
         connect(btnResetSetting,SIGNAL(clicked()),this,SLOT(handel_ResetSetting()));
 
-
+     /*About me btn*/
+     QPushButton *btnAboutme = new QPushButton(this);
+        btnAboutme->setAutoFillBackground(true);
+        btnAboutme->setIcon(QIcon(":/icon/info30"));
+        btnAboutme->setIconSize(QSize(20,20));
+        btnAboutme->setFixedSize(30,30);
+        btnAboutme->setToolTip(tr("About Me"));
+        connect(btnAboutme,SIGNAL(clicked()),this,SLOT(handel_AboutMe()));
 
         QMenu *menu = new QMenu(this);
         QVBoxLayout *xlayout = new QVBoxLayout(menu);
@@ -190,6 +199,9 @@ void Xdebuger::LoadToolBar(QHBoxLayout *lay)
      }
      xBaud->setCurrentIndex(6); /*Set in 115200*/
 
+     /*spacer*/
+     QSpacerItem *Spitem = new QSpacerItem(0,10, QSizePolicy::Expanding, QSizePolicy::Expanding);
+
      lay->addWidget(xPort);
      lay->addWidget(xBaud);
      lay->addWidget(btnRefresh);
@@ -197,6 +209,10 @@ void Xdebuger::LoadToolBar(QHBoxLayout *lay)
      lay->addWidget(btnClean);
      lay->addWidget(btnView);
      lay->addWidget(btnResetSetting);
+     lay->addSpacerItem(Spitem);
+     lay->addWidget(btnAboutme);
+
+
      TopLay->setAlignment(Qt::AlignLeft);
 }
 
@@ -364,6 +380,33 @@ void Xdebuger::handel_viewChange(bool newstatus)
 
     ViewList[xbtn->property("id").toInt()]->setHidden(newstatus);
     xSettings->setValue("view/"+xbtn->property("id").toString(),newstatus ? "true":"false");
+}
+
+void Xdebuger::handel_AboutMe()
+{
+    QString translatedTextAboutQtCaption;
+        translatedTextAboutQtCaption = QMessageBox::tr(
+            "<h3>zMonitor</h3>"
+            "<p>This program Publish under GPL3 license</p>"
+            "<p>This program uses Qt version %1.</p>"
+            ).arg(QLatin1String(QT_VERSION_STR));
+
+        QString translatedTextAboutQtText;
+        translatedTextAboutQtText = QMessageBox::tr(
+            "<p>Website: <a href=\"http://%1/\">%1</a>.</p>"
+            "<p>Git: <a href=\"http://%2/\">GitHub</a>.</p>"
+            ""
+            ).arg(QLatin1String("sisoog.com"),
+                  QLatin1String("github.com/sisoog"));
+
+        QMessageBox *msgBox = new QMessageBox(this);
+        msgBox->setAttribute(Qt::WA_DeleteOnClose);
+        msgBox->setWindowTitle("About Me");
+        msgBox->setIconPixmap(QPixmap(":/icon/about"));
+        msgBox->setText(translatedTextAboutQtCaption);
+        msgBox->setInformativeText(translatedTextAboutQtText);
+        msgBox->exec();
+
 }
 
 Xdebuger::~Xdebuger()

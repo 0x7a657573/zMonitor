@@ -41,6 +41,7 @@ private slots:
     void handel_TimerUpdate();
     void handel_viewChange(bool newstatus);
     void handel_ResetSetting();
+    void handel_AboutMe();
 
 private:
     void LoadToolBar(QHBoxLayout *lay);

@@ -18,5 +18,7 @@
         <file alias="terminal">icon/zterminal.png</file>
         <file alias="tag30">icon/icons8-price-tag-30.png</file>
         <file alias="restart30">icon/icons8-restart-30.png</file>
+        <file alias="info30">icon/icons8-information-30.png</file>
+        <file alias="about">icon/ztermina128.png</file>
     </qresource>
 </RCC>
