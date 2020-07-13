@@ -7,8 +7,8 @@
 #include <QClipboard>
 #include <QApplication>
 #include <QInputDialog>
-
-
+#include "filterdialog.h"
+#include <QColor>
 
 xdbg::xdbg(QSettings *Setting,QWidget *parent,int id) : QWidget(parent)
 {
@@ -34,7 +34,9 @@ xdbg::xdbg(QSettings *Setting,QWidget *parent,int id) : QWidget(parent)
     PopMenu->addAction(QIcon(":/icon/copy30"),"Copy All", this,SLOT(CopyToClipboard()));
     PopMenu->addAction(QIcon(":/icon/textcolor30"),"Text Color", this,SLOT(ShowColorDialog()));
     PopMenu->addAction(QIcon(":/icon/fillcolor30"),"Background", this,SLOT(ShowBColorDialog()));
+    PopMenu->addAction(QIcon(":/icon/filter30"),"Filter", this,SLOT(handel_SetupFilter()));
     PopMenu->addAction(QIcon(":/icon/tag30"),"Change ID", this,SLOT(handel_ChangeID()));
+
     connect(&ColorDialog,SIGNAL(colorSelected(QColor)),this,SLOT(handel_SetColor(QColor)));
 
     LoadSetting();
@@ -42,6 +44,7 @@ xdbg::xdbg(QSettings *Setting,QWidget *parent,int id) : QWidget(parent)
     QPalette pal = ListView->palette();
     pal.setColor(QPalette::Base, BackColor);
     pal.setColor(QPalette::Text, TextColor);
+    pal.setColor(QPalette::Background, (xFilter.Enable) ? Qt::red:Qt::black);
     ListView->setPalette(pal);
 }
 
@@ -76,6 +79,12 @@ void xdbg::LoadSetting()
         xSetting->setValue(xKey + "color", TextColor);
         xSetting->sync();
     }
+
+    /*load filter setting*/
+    xFilter.Filter = xSetting->value(xKey + "filters").value<QString>();
+    xFilter.Enable = xSetting->value(xKey + "filtere").value<bool>();
+    xFilter.Blankfilter = xSetting->value(xKey + "filterb").value<bool>();
+    Filters = xFilter.Filter.split("\n");
 }
 
 void xdbg::setID(int id)
@@ -109,6 +118,26 @@ void xdbg::ResetSetting()
 
 void xdbg::addItem(QString Item)
 {
+    if(xFilter.Enable)
+    {
+        if(!(xFilter.Blankfilter && Item.isEmpty()))
+        {
+            bool passfilter = false;
+            foreach (const QString &fItem, Filters)
+            {
+                QString Rge = fItem;
+                Rge = Rge.replace("\r","");
+                if(Item.indexOf(QRegExp(Rge))!=-1)
+                {
+                    passfilter = true;
+                    break;
+                }
+            }
+            if(!passfilter)
+                return;
+        }
+    }
+
     QListWidgetItem *newItem= new QListWidgetItem();
     newItem->setData(Qt::UserRole, QDateTime::currentDateTime().toString("dd.MM.yyyy hh:mm:ss.zzz"));
     newItem->setText(Item);
@@ -196,3 +225,27 @@ void xdbg::handel_ChangeID()
      setID(id);
     }
 }
+
+void xdbg::handel_SetupFilter()
+{
+    FilterDialog Filter(xFilter.Enable,xFilter.Blankfilter,xFilter.Filter,this);
+    Filter.exec();
+    xFilter.Enable = Filter.GetEnable();
+    xFilter.Filter = Filter.GetText();
+    xFilter.Blankfilter = Filter.GetBlankFilter();
+    Filters = xFilter.Filter.split("\n");
+
+    QPalette pal = ListView->palette();
+    pal.setColor(QPalette::Background, (xFilter.Enable) ? Qt::red:Qt::black);
+    ListView->setPalette(pal);
+
+    xSetting->setValue(xKey + "filters", xFilter.Filter);
+    xSetting->setValue(xKey + "filtere", xFilter.Enable);
+    xSetting->setValue(xKey + "filterb", xFilter.Blankfilter);
+    xSetting->sync();
+}
+
+//void xdbg::load_filter()
+//{
+
+//}

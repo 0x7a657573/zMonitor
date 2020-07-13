@@ -20,6 +20,7 @@
 #include <QList>
 #include <QTimer>
 #include <QSettings>
+#include <QLineEdit>
 
 #define StartInterPreter    0xC8
 #define EndInterPreter      0xFA
@@ -42,6 +43,7 @@ private slots:
     void handel_viewChange(bool newstatus);
     void handel_ResetSetting();
     void handel_AboutMe();
+    void handel_SendSerial();
 
 private:
     void LoadToolBar(QHBoxLayout *lay);
@@ -76,6 +78,10 @@ protected:
     QLabel      *StatusIconLbl;
     QLabel      *StatusMessageLbl;
     QLabel      *StatusStatisticsLbl;
+
+    /*toolsbar*/
+    QLineEdit *CmdInput;
+    QPushButton *btnSend;
 
     /*main view*/
     QList<xdbg*> ViewList;

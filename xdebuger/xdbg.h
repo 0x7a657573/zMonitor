@@ -29,6 +29,7 @@ public slots:
     void handel_mousePressEvent(QMouseEvent *event);
     void handel_SetColor(const QColor &color);
     void handel_ChangeID();
+    void handel_SetupFilter();
 
     void clear();
     void CopyToClipboard();
@@ -46,6 +47,17 @@ protected:
     int MaxRow;
     QColor TextColor;
     QColor BackColor;
+
+    /*filter*/
+    typedef struct
+    {
+        bool Enable;
+        bool Blankfilter;
+        QString Filter;
+
+    }Filter_t;
+    Filter_t xFilter;
+    QStringList Filters;
 
     /*PopUp*/
     QMenu *PopMenu;

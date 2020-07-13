@@ -20,5 +20,8 @@
         <file alias="restart30">icon/icons8-restart-30.png</file>
         <file alias="info30">icon/icons8-information-30.png</file>
         <file alias="about">icon/ztermina128.png</file>
+        <file alias="filter30">icon/icons8-filter-30.png</file>
+        <file alias="send">icon/icons8-paper-plane-30.png</file>
+        <file alias="esend">icon/icons8-email-send-96.png</file>
     </qresource>
 </RCC>

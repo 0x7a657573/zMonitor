@@ -20,12 +20,14 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES += \
     main.cpp \
     mainwindow.cpp \
+    xdebuger/filterdialog.cpp \
     xdebuger/mylistwidget.cpp \
     xdebuger/xdbg.cpp \
     xdebuger/xdebug.cpp
 
 HEADERS += \
     mainwindow.h \
+    xdebuger/filterdialog.h \
     xdebuger/mylistwidget.h \
     xdebuger/xdbg.h \
     xdebuger/xdebug.h

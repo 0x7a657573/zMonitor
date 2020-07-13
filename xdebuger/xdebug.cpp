@@ -14,6 +14,7 @@
 #include <QDialogButtonBox>
 #include <QSpacerItem>
 #include <QSplashScreen>
+#include <QLineEdit>
 
 Xdebuger::Xdebuger(QWidget *parent) : QWidget(parent)
 {
@@ -199,17 +200,40 @@ void Xdebuger::LoadToolBar(QHBoxLayout *lay)
      }
      xBaud->setCurrentIndex(6); /*Set in 115200*/
 
+
+     /*QINput Data To Esn*/
+     CmdInput = new QLineEdit();
+     CmdInput->setMaximumWidth(200);
+     CmdInput->setFixedHeight(30);
+     CmdInput->setToolTip(tr("Enter text/cmd to send from serial"));
+     CmdInput->setEnabled(false);
+
+     btnSend = new QPushButton(this);
+     btnSend->setAutoFillBackground(true);
+     btnSend->setIcon(QIcon(":/icon/esend"));
+     btnSend->setIconSize(QSize(20,20));
+     btnSend->setFixedSize(30,30);
+     btnSend->setToolTip(tr("Send From Serial"));
+     btnSend->setEnabled(false);
+     connect(btnSend,SIGNAL(clicked()),this,SLOT(handel_SendSerial()));
+
+     QSpacerItem *SendSpitem = new QSpacerItem(10,0, QSizePolicy::Fixed, QSizePolicy::Minimum);
+
      /*spacer*/
-     QSpacerItem *Spitem = new QSpacerItem(0,10, QSizePolicy::Expanding, QSizePolicy::Expanding);
+     QSpacerItem *Spitem = new QSpacerItem(0,0, QSizePolicy::Expanding, QSizePolicy::Minimum);
 
      lay->addWidget(xPort);
      lay->addWidget(xBaud);
      lay->addWidget(btnRefresh);
      lay->addWidget(btnConnect);
      lay->addWidget(btnClean);
+     lay->addSpacerItem(SendSpitem);
+     lay->addWidget(CmdInput);
+     lay->addWidget(btnSend);
+
+     lay->addSpacerItem(Spitem);
      lay->addWidget(btnView);
      lay->addWidget(btnResetSetting);
-     lay->addSpacerItem(Spitem);
      lay->addWidget(btnAboutme);
 
 
@@ -222,6 +246,8 @@ void Xdebuger::LockPortOpen(bool Look)
     xBaud->setEnabled(Look);
     btnRefresh->setEnabled(Look);
     StatusStatisticsLbl->setVisible(!Look);
+    btnSend->setEnabled(!Look);
+    CmdInput->setEnabled(!Look);
 }
 
 /*Btn Connect / DisConnect Action*/
@@ -407,6 +433,16 @@ void Xdebuger::handel_AboutMe()
         msgBox->setInformativeText(translatedTextAboutQtText);
         msgBox->exec();
 
+}
+
+void Xdebuger::handel_SendSerial()
+{
+    QString data = CmdInput->text();
+    sPort->write((char*)data.data(), data.length());
+    if ( sPort->bytesToWrite() > 0)
+    {
+         sPort->flush();
+    }
 }
 
 Xdebuger::~Xdebuger()
