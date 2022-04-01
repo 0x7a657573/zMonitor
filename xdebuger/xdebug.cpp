@@ -437,8 +437,9 @@ void Xdebuger::handel_AboutMe()
 
 void Xdebuger::handel_SendSerial()
 {
-    QString data = CmdInput->text();
-    sPort->write((char*)data.data(), data.length());
+    QString data = CmdInput->text() + "\r\n";
+    QByteArray sendarray = data.toUtf8();
+    sPort->write(sendarray);
     if ( sPort->bytesToWrite() > 0)
     {
          sPort->flush();
