@@ -23,5 +23,6 @@
         <file alias="filter30">icon/icons8-filter-30.png</file>
         <file alias="send">icon/icons8-paper-plane-30.png</file>
         <file alias="esend">icon/icons8-email-send-96.png</file>
+        <file alias="depth30">icon/icons8-depth-30.png</file>
     </qresource>
 </RCC>
