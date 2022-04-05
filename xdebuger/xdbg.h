@@ -8,12 +8,14 @@
 #include <QListView>
 #include <QListWidget>
 #include <QMouseEvent>
-#include "mylistwidget.h"
 #include <QLabel>
 #include <QColorDialog>
 #include <QSettings>
+#include <QPlainTextEdit>
+#include <QPaintEvent>
 
-#define IDSign  0x2e756400
+#define IDSign      0x2e756400
+#define DepthSign   0xF0000000
 
 class xdbg : public QWidget
 {
@@ -26,10 +28,11 @@ public:
     void ResetSetting();
 
 public slots:
-    void handel_mousePressEvent(QMouseEvent *event);
     void handel_SetColor(const QColor &color);
     void handel_ChangeID();
+    void handel_ChangeDepth();
     void handel_SetupFilter();
+    void handel_logCustomContextMenuRequested(QPoint p);
 
     void clear();
     void CopyToClipboard();
@@ -42,11 +45,10 @@ protected:
     QSettings *xSetting;
     int xID;
     int sID;
-    MyListWidget   *ListView;
     QVBoxLayout *MayLayout;
-    int MaxRow;
     QColor TextColor;
     QColor BackColor;
+    QPlainTextEdit *log_view;
 
     /*filter*/
     typedef struct
@@ -60,7 +62,6 @@ protected:
     QStringList Filters;
 
     /*PopUp*/
-    QMenu *PopMenu;
     QColorDialog    ColorDialog;
 
     void LoadSetting();
