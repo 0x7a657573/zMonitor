@@ -325,8 +325,10 @@ void Xdebuger::handel_DataReady()
 
 void Xdebuger::ProsessIncomingData(QByteArray &data)
 {
-    static QByteArray StaticData;
+
+    // mesage format : <0xC8><ID>TEXT....<0xFA>
     TotlaRx+=data.length();
+    static QByteArray StaticData;
     StaticData.append(data);
 
     int Start = StaticData.indexOf(StartInterPreter);
@@ -335,8 +337,10 @@ void Xdebuger::ProsessIncomingData(QByteArray &data)
     if(Start==End || End==-1)
         return;
 
+    End++;
     QByteArray Prosess_Data = StaticData.mid(Start,(End-Start));
     QByteArray Remind_Data = StaticData.mid(End);
+    //qDebug() << QString::fromStdString(Prosess_Data.toStdString()) << QString::fromStdString(Remind_Data.toStdString()) ;
     StaticData.clear();
     StaticData.append(Remind_Data);
 
@@ -423,7 +427,7 @@ void Xdebuger::handel_AboutMe()
             "<p>Git: <a href=\"http://%2/\">GitHub</a>.</p>"
             ""
             ).arg(QLatin1String("sisoog.com"),
-                  QLatin1String("github.com/sisoog"));
+                  QLatin1String("github.com/0x7a657573/zMonitor"));
 
         QMessageBox *msgBox = new QMessageBox(this);
         msgBox->setAttribute(Qt::WA_DeleteOnClose);
