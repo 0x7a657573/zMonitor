@@ -10,6 +10,7 @@
 #include "filterdialog.h"
 #include <QColor>
 
+
 xdbg::xdbg(QSettings *Setting,QWidget *parent,int id) : QWidget(parent)
 {
     sID = id;
@@ -118,6 +119,143 @@ void xdbg::ResetSetting()
     xSetting->sync();
 }
 
+
+QString xdbg::ConverANSIEscapeToHtml(QString AES,QString line)
+{
+    //See https://en.wikipedia.org/wiki/ANSI_escape_code#Colors
+    enum AnsiEscapeCodes
+    {
+        ResetFormat = 0,
+        BoldText = 1,
+        TextColorStart = 30,
+        TextColorEnd = 37,
+        RgbTextColor = 38,
+        DefaultTextColor = 39,
+        BackgroundColorStart = 40,
+        BackgroundColorEnd = 47,
+        RgbBackgroundColor = 48,
+        DefaultBackgroundColor = 49
+    };
+
+    QStringList format = AES.mid(2,AES.length()-3).split(';');
+    QList<int>  numbers;
+    foreach(QString num, format)
+        numbers.append(num.toInt());
+
+
+    for (int i = 0; i < numbers.size(); ++i)
+    {
+        const uint code = numbers.at(i);
+
+        if (code >= TextColorStart && code <= TextColorEnd)
+        {
+            int  GCode = code - TextColorStart;
+            const int red   = GCode & 1 ? 170 : 0;
+            const int green = GCode & 2 ? 170 : 0;
+            const int blue  = GCode & 4 ? 170 : 0;
+            Escape_fColor = QColor(red,green,blue).name();
+        }
+        else if (code >= BackgroundColorStart && code <= BackgroundColorEnd)
+        {
+            int  GCode = code - TextColorStart;
+            const int red   = GCode & 1 ? 170 : 0;
+            const int green = GCode & 2 ? 170 : 0;
+            const int blue  = GCode & 4 ? 170 : 0;
+            Escape_bColor = QColor(red,green,blue).name();
+        }
+        else
+        {
+            switch (code)
+            {
+                case ResetFormat:       break;
+                case BoldText:          break;
+                case DefaultTextColor:
+                    Escape_fColor = "";
+                break;
+                case DefaultBackgroundColor:
+                    Escape_bColor = "";
+                break;
+                case RgbTextColor:
+                case RgbBackgroundColor:
+                // See http://en.wikipedia.org/wiki/ANSI_escape_code#Colors
+                if (++i >= numbers.size())
+                     break;
+                switch (numbers.at(i))
+                {
+                    case 2:
+                    // RGB set with format: 38;2;<r>;<g>;<b>
+                        if ((i + 3) < numbers.size())
+                        {
+                            QString sColor =  QColor(numbers.at(i + 1),
+                                                     numbers.at(i + 2),
+                                                     numbers.at(i + 3)).name();
+                            Escape_fColor =  (code == RgbTextColor) ? sColor:Escape_fColor;
+                            Escape_bColor =  (code == RgbTextColor) ? Escape_bColor:sColor;
+                        }
+                        i += 3;
+                        break;
+
+                    case 5:
+                    // 256 color mode with format: 38;5;<i>
+                        uint index = numbers.at(i + 1);
+
+                        QColor color;
+                        if (index < 8)
+                        {
+                            // The first 8 colors are standard low-intensity
+                            // ANSI colors.
+                            const int red   = index & 1 ? 170 : 0;
+                            const int green = index & 2 ? 170 : 0;
+                            const int blue  = index & 4 ? 170 : 0;
+                            color =  QColor(red,green,blue);
+                        }
+                        else if (index < 16)
+                        {
+                            // The next 8 colors are standard high-intensity
+                            // ANSI colors.
+                            const int red   = (index - 8) & 1 ? 170 : 0;
+                            const int green = (index - 8) & 2 ? 170 : 0;
+                            const int blue  = (index - 8) & 4 ? 170 : 0;
+                            color = QColor(red,green,blue).lighter(150);
+                        }
+                        else if (index < 232)
+                        {
+                            // The next 216 colors are a 6x6x6 RGB cube.
+                            uint o = index - 16;
+                            color = QColor((o / 36) * 51, ((o / 6) % 6) * 51,
+                                           (o % 6) * 51);
+                        }
+                        else
+                        {
+                            // The last 24 colors are a greyscale gradient.
+                            int grey = int((index - 232) * 11);
+                            color = QColor(grey, grey, grey);
+                        }
+
+                        if (code == RgbTextColor)
+                            Escape_fColor = color.name();
+                        else
+                            Escape_bColor = color.name();
+                        ++i;
+                        break;
+                }
+                break;
+            default:
+                break;
+            }
+        }
+    }
+
+    QString Export = "<span style=\"";
+    if(Escape_fColor.length())
+        Export += "color:"+Escape_fColor;
+    if(Escape_bColor.length())
+        Export += ";background-color:"+Escape_bColor;
+    Export+="\">"+ line +"</span>";
+
+    return Export;
+}
+
 void xdbg::addItem(QString Item)
 {
     if(xFilter.Enable)
@@ -140,7 +278,32 @@ void xdbg::addItem(QString Item)
         }
     }
 
-    log_view->appendPlainText(Item);
+    QString ANSI_EscapeMark  = "\x1B";
+    /*check input string for Escape command's*/
+    if(Item.indexOf(ANSI_EscapeMark)<0)
+    {
+        log_view->appendPlainText(Item);
+        return;
+    }
+
+    /*reset Escape Color*/
+    Escape_fColor = "";
+    Escape_bColor = "";
+    /*Try parss ANSI Escape Sequences*/
+    QString ExportHTML =  "";
+    QString rgxe  =  "\x1b\[[0-9;]*m";
+    QRegExp ec(rgxe);
+    int pos = 0;
+    while (pos!=-1 && (pos = ec.indexIn(Item, pos)) != -1)
+    {
+        pos += ec.matchedLength();
+        int  Next = Item.indexOf(ANSI_EscapeMark,pos);
+        QString PlainText = Item.mid(pos,(Next>0) ? Next-pos:-1);
+        QString EscapeCode = ec.cap(0);
+        pos = Next;
+        ExportHTML += ConverANSIEscapeToHtml(EscapeCode,PlainText);
+    }
+    log_view->appendHtml(ExportHTML);
 }
 
 void xdbg::clear()
@@ -152,10 +315,17 @@ void xdbg::CopyToClipboard()
 {
     QClipboard *clipboard = QApplication::clipboard();
     clipboard->clear();
-    QString Clip = log_view->toPlainText();
+    QString Clip = log_view->textCursor().selectedText();
     clipboard->setText(Clip);
 }
 
+void xdbg::CopyAllToClipboard()
+{
+    QClipboard *clipboard = QApplication::clipboard();
+    clipboard->clear();
+    QString Clip = log_view->toPlainText();
+    clipboard->setText(Clip);
+}
 
 void xdbg::ShowColorDialog()
 {
@@ -238,7 +408,11 @@ void xdbg::handel_logCustomContextMenuRequested( QPoint p )
 
     pMenu->clear();
     pMenu->addAction(QIcon(":/icon/clean30"),"Clear", this,SLOT(clear()));
-    pMenu->addAction(QIcon(":/icon/copy30"),"Copy All", this,SLOT(CopyToClipboard()));
+
+    if(log_view->textCursor().selectedText().length())
+        pMenu->addAction(QIcon(":/icon/copy30"),"Copy", this,SLOT(CopyToClipboard()));
+
+    pMenu->addAction(QIcon(":/icon/copy30"),"Copy All", this,SLOT(CopyAllToClipboard()));
     pMenu->addAction(QIcon(":/icon/textcolor30"),"Text Color", this,SLOT(ShowColorDialog()));
     pMenu->addAction(QIcon(":/icon/fillcolor30"),"Background", this,SLOT(ShowBColorDialog()));
     pMenu->addAction(QIcon(":/icon/filter30"),"Filter", this,SLOT(handel_SetupFilter()));

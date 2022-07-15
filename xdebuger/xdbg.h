@@ -35,6 +35,7 @@ public slots:
     void handel_logCustomContextMenuRequested(QPoint p);
 
     void clear();
+    void CopyAllToClipboard();
     void CopyToClipboard();
     void ShowColorDialog();
     void ShowBColorDialog();
@@ -63,8 +64,11 @@ protected:
 
     /*PopUp*/
     QColorDialog    ColorDialog;
-
     void LoadSetting();
+
+    QString Escape_fColor;
+    QString Escape_bColor;
+    QString ConverANSIEscapeToHtml(QString AES,QString line);
 };
 
 #endif // XDBG_H
