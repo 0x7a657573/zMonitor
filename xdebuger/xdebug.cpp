@@ -426,7 +426,7 @@ void Xdebuger::handel_AboutMe()
             "<p>Website: <a href=\"http://%1/\">%1</a>.</p>"
             "<p>Git: <a href=\"http://%2/\">GitHub</a>.</p>"
             ""
-            ).arg(QLatin1String("sisoog.com"),
+            ).arg(QLatin1String("0x7a657573.com"),
                   QLatin1String("github.com/0x7a657573/zMonitor"));
 
         QMessageBox *msgBox = new QMessageBox(this);
