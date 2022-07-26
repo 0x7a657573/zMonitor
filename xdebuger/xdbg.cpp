@@ -7,6 +7,7 @@
 #include <QApplication>
 #include <QInputDialog>
 #include <QPlainTextEdit>
+#include <QRegularExpression>
 #include "filterdialog.h"
 #include <QColor>
 
@@ -18,7 +19,7 @@ xdbg::xdbg(QSettings *Setting,QWidget *parent,int id) : QWidget(parent)
     xKey = "xdbg/" + QString::number(id) + "/";
     MayLayout = new QVBoxLayout(this);
     MayLayout->setSpacing(0);
-    MayLayout->setMargin(0);
+    MayLayout->setContentsMargins(0,0,0,0);
 
     log_view = new QPlainTextEdit();
     log_view->setReadOnly(true);
@@ -33,8 +34,10 @@ xdbg::xdbg(QSettings *Setting,QWidget *parent,int id) : QWidget(parent)
     QPalette pal = log_view->palette();
     pal.setColor(QPalette::Base, BackColor);
     pal.setColor(QPalette::Text, TextColor);
-    pal.setColor(QPalette::Background, (xFilter.Enable) ? Qt::red:Qt::black);
+    //pal.setColor(QPalette::Background, (xFilter.Enable) ? Qt::red:Qt::black);
     log_view->setPalette(pal);
+
+    //addItem("\x1B[31mHello \x1B[32mWorld");
 }
 
 void xdbg::LoadSetting()
@@ -267,7 +270,7 @@ void xdbg::addItem(QString Item)
             {
                 QString Rge = fItem;
                 Rge = Rge.replace("\r","");
-                if(Item.indexOf(QRegExp(Rge))!=-1)
+                if(Item.indexOf(QRegularExpression(Rge))!=-1)
                 {
                     passfilter = true;
                     break;
@@ -289,20 +292,23 @@ void xdbg::addItem(QString Item)
     /*reset Escape Color*/
     Escape_fColor = "";
     Escape_bColor = "";
+
     /*Try parss ANSI Escape Sequences*/
     QString ExportHTML =  "";
     QString rgxe  =  "\x1b\[[0-9;]*m";
-    QRegExp ec(rgxe);
+    ec.setPattern(rgxe);
     int pos = 0;
-    while (pos!=-1 && (pos = ec.indexIn(Item, pos)) != -1)
+    do
     {
-        pos += ec.matchedLength();
+        const QRegularExpressionMatch match = ec.match(Item,pos);
+        pos += match.capturedLength();
         int  Next = Item.indexOf(ANSI_EscapeMark,pos);
         QString PlainText = Item.mid(pos,(Next>0) ? Next-pos:-1);
-        QString EscapeCode = ec.cap(0);
+        QString EscapeCode = match.captured(0);
         pos = Next;
         ExportHTML += ConverANSIEscapeToHtml(EscapeCode,PlainText);
-    }
+    }while(pos!=-1);
+
     log_view->appendHtml(ExportHTML);
 }
 
@@ -392,7 +398,7 @@ void xdbg::handel_SetupFilter()
     Filters = xFilter.Filter.split("\n");
 
     QPalette pal = log_view->palette();
-    pal.setColor(QPalette::Background, (xFilter.Enable) ? Qt::red:Qt::black);
+    //pal.setColor(QPalette::Background, (xFilter.Enable) ? Qt::red:Qt::black);
     log_view->setPalette(pal);
 
     xSetting->setValue(xKey + "filters", xFilter.Filter);

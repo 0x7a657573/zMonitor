@@ -69,6 +69,7 @@ protected:
     QString Escape_fColor;
     QString Escape_bColor;
     QString ConverANSIEscapeToHtml(QString AES,QString line);
+    QRegularExpression ec;
 };
 
 #endif // XDBG_H

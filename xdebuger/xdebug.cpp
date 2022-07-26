@@ -55,7 +55,8 @@ void Xdebuger::LoadMainView(QHBoxLayout *lay)
 {
     QVBoxLayout *vLay = new QVBoxLayout();
     vLay->setSpacing(2);
-    vLay->setMargin(2);
+    vLay->setContentsMargins(2,2,2,2);
+
     for(int i=0;i<4;i++)
     {
         QHBoxLayout *hLay = new QHBoxLayout();
