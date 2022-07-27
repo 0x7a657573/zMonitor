@@ -49,6 +49,13 @@ Xdebuger::Xdebuger(QWidget *parent) : QWidget(parent)
     /*Timer Update Pramiter*/
     Timer = new QTimer(this);
     connect(Timer,SIGNAL(timeout()) , this, SLOT(handel_TimerUpdate()));
+
+//    QByteArray me ;
+//    me.append(StartInterPreter);
+//    me.append(StartInterPreter+1);
+//    me.append(tr("\x1B[31mHello \x1B[32mWorld").toLocal8Bit());
+//    me.append(EndInterPreter);
+//    ProsessIncomingData(me);
 }
 
 void Xdebuger::LoadMainView(QHBoxLayout *lay)
@@ -348,6 +355,8 @@ void Xdebuger::ProsessIncomingData(QByteArray &data)
     QList<QByteArray> list = Prosess_Data.split(StartInterPreter);
     foreach( QByteArray item, list )
     {
+        if(item.length()<2) /*ID + EndMark*/
+            continue;
         QString Text = QString::fromStdString(item.mid(1,item.indexOf(EndInterPreter)-1).toStdString());
         int id = (uint8_t)item[0];
         if(id<=StartInterPreter) continue;
