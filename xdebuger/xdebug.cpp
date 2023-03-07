@@ -106,6 +106,13 @@ void Xdebuger::LoadStatusBar(QHBoxLayout *lay)
 
 void Xdebuger::LoadToolBar(QHBoxLayout *lay)
 {
+    /*make socket Object*/
+    socket = new QTcpSocket(this);
+    connect(socket, SIGNAL(connected()),this, SLOT(handel_tcp_connected()));
+    connect(socket, SIGNAL(disconnected()),this, SLOT(handel_tcp_disconnected()));
+    connect(socket, SIGNAL(errorOccurred(QAbstractSocket::SocketError)),this, SLOT(handel_tcp_errorOccurred(QAbstractSocket::SocketError)));
+    connect(socket, SIGNAL(readyRead()),this, SLOT(handel_tcp_dataready()));
+
     /*Connect btn*/
      btnConnect = new QPushButton(this);
      btnConnect->setAutoFillBackground(true);
@@ -239,7 +246,7 @@ void Xdebuger::LoadToolBar(QHBoxLayout *lay)
      btnSend->setFixedSize(30,30);
      btnSend->setToolTip(tr("Send From Serial"));
      btnSend->setEnabled(false);
-     connect(btnSend,SIGNAL(clicked()),this,SLOT(handel_SendSerial()));
+     connect(btnSend,SIGNAL(clicked()),this,SLOT(handel_Send()));
 
      QSpacerItem *SendSpitem = new QSpacerItem(10,0, QSizePolicy::Fixed, QSizePolicy::Minimum);
 
@@ -289,9 +296,75 @@ void Xdebuger::LockPortOpen(bool Look)
 }
 
 /*connect from IP*/
+void Xdebuger::handel_tcp_connected()
+{
+    TotlaRx = 0;
+    btnConnect->setIcon(QIcon(":/icon/connect30"));
+    btnConnect->setIconSize(QSize(20,20));
+    Port_IsOpen = true;
+    LockPortOpen(false);
+
+    /*Update Status Bar*/
+    StatusMessageLbl->setText(QString("Connected {%1}").arg(HostEdit->text()));
+    StatusIconLbl->setPixmap(QPixmap(":/icon/connect"));
+    Timer->start(500);
+    btnConnect->setEnabled(true);
+}
+
+void Xdebuger::handel_tcp_errorOccurred(QAbstractSocket::SocketError error)
+{
+    Q_UNUSED(error);
+
+    Port_IsOpen = false;
+    btnConnect->setIcon(QIcon(":/icon/disconnect30"));
+    btnConnect->setIconSize(QSize(20,20));
+    LockPortOpen(true);
+
+    /*Status Bar Update*/
+    StatusMessageLbl->setText("Disconnect");
+    StatusIconLbl->setPixmap(QPixmap(":/icon/disconnect"));
+    Timer->stop();
+    btnConnect->setEnabled(true);
+
+    QMessageBox::critical(this, tr("Error"), socket->errorString());
+}
+
+void Xdebuger::handel_tcp_disconnected()
+{
+    Port_IsOpen = false;
+    btnConnect->setIcon(QIcon(":/icon/disconnect30"));
+    btnConnect->setIconSize(QSize(20,20));
+    LockPortOpen(true);
+
+    /*Status Bar Update*/
+    StatusMessageLbl->setText("Disconnect");
+    StatusIconLbl->setPixmap(QPixmap(":/icon/disconnect"));
+    Timer->stop();
+    btnConnect->setEnabled(true);
+}
+
+
 void Xdebuger::handel_ConDisConAction_UseIP()
 {
-    qDebug() << "Connect to IP :)";
+    QString Host = tr("127.0.0.1");//HostEdit->text();
+    uint16_t Port = 7666;
+
+    if(Port_IsOpen==false) /*we Need Open Port*/
+    {
+        btnConnect->setEnabled(false);
+        // Try Connect to Server
+        socket->connectToHost(Host, Port);
+    }
+    else
+    {
+
+        /*If Port Is Open Try Close It*/
+        if(socket->isOpen())
+        {
+            btnConnect->setEnabled(false);
+            socket->close();
+        }
+    }
 }
 
 /*Btn Connect / DisConnect Action*/
@@ -358,6 +431,13 @@ void Xdebuger::handel_Combo_PortChange(int index)
     QString descrip = QVariant(xPort->itemData(index,Qt::ToolTipRole)).toString();
     xPort->setToolTip(descrip);
     //qDebug() << index << descrip;
+}
+
+void Xdebuger::handel_tcp_dataready()
+{
+    QByteArray data = socket->readAll();
+
+    ProsessIncomingData(data);
 }
 
 void Xdebuger::handel_DataReady()
@@ -485,14 +565,24 @@ void Xdebuger::handel_AboutMe()
 
 }
 
-void Xdebuger::handel_SendSerial()
+void Xdebuger::handel_Send()
 {
     QString data = CmdInput->text() + "\r\n";
     QByteArray sendarray = data.toUtf8();
-    sPort->write(sendarray);
-    if ( sPort->bytesToWrite() > 0)
+
+    if(UseIP)
     {
-         sPort->flush();
+        socket->write(sendarray);
+        if(socket->bytesToWrite() > 0)
+            socket->flush();
+    }
+    else
+    {
+        sPort->write(sendarray);
+        if ( sPort->bytesToWrite() > 0)
+        {
+             sPort->flush();
+        }
     }
 }
 

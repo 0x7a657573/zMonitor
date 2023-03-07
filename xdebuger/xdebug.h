@@ -21,6 +21,7 @@
 #include <QTimer>
 #include <QSettings>
 #include <QLineEdit>
+#include <QTcpSocket>
 
 #define StartInterPreter    0xC8
 #define EndInterPreter      0xFA
@@ -44,7 +45,11 @@ private slots:
     void handel_viewChange(bool newstatus);
     void handel_ResetSetting();
     void handel_AboutMe();
-    void handel_SendSerial();
+    void handel_Send();
+    void handel_tcp_connected();
+    void handel_tcp_disconnected();
+    void handel_tcp_errorOccurred(QAbstractSocket::SocketError error);
+    void handel_tcp_dataready();
 
 private:
     void LoadToolBar(QHBoxLayout *lay);
@@ -67,7 +72,7 @@ protected:
     bool UseIP;
     /*Tcp Port*/
     QLineEdit *HostEdit;
-
+    QTcpSocket *socket;
 
     /*Serial Port*/
     bool    Port_IsOpen;
