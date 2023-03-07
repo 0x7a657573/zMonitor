@@ -37,6 +37,7 @@ private slots:
     void handel_Combo_PortChange(int index);
     void handel_LoadSerialPort();
     void handel_ConDisConAction();
+    void handel_ConDisConAction_UseIP();
     void handel_DataReady();
     void handel_clearLogs();
     void handel_TimerUpdate();
@@ -62,6 +63,11 @@ protected:
     QHBoxLayout *TopLay;
     QHBoxLayout *MainLay;
     QHBoxLayout *BottomLay;
+
+    bool UseIP;
+    /*Tcp Port*/
+    QLineEdit *HostEdit;
+
 
     /*Serial Port*/
     bool    Port_IsOpen;

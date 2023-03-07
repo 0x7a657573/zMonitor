@@ -19,6 +19,9 @@
 Xdebuger::Xdebuger(QWidget *parent) : QWidget(parent)
 {
     xSettings = new QSettings("config.ini",QSettings::IniFormat,this);
+    //xSettings->setValue("USEIP",true);
+    UseIP = xSettings->value("USEIP",false).toBool();
+
     setAttribute(Qt::WA_StaticContents);
 
     Layout = new QVBoxLayout(this);
@@ -110,7 +113,14 @@ void Xdebuger::LoadToolBar(QHBoxLayout *lay)
      btnConnect->setIconSize(QSize(20,20));
      btnConnect->setFixedSize(30,30);
      btnConnect->setToolTip(tr("Try Connect To Port"));
-     connect(btnConnect,SIGNAL(clicked()),this,SLOT(handel_ConDisConAction()));
+     if(UseIP)
+     {
+        connect(btnConnect,SIGNAL(clicked()),this,SLOT(handel_ConDisConAction_UseIP()));
+     }
+     else
+     {
+        connect(btnConnect,SIGNAL(clicked()),this,SLOT(handel_ConDisConAction()));
+     }
 
      /*clean btn*/
      QPushButton *btnClean = new QPushButton(this);
@@ -208,6 +218,12 @@ void Xdebuger::LoadToolBar(QHBoxLayout *lay)
      }
      xBaud->setCurrentIndex(6); /*Set in 115200*/
 
+    /*Host input For IP:Port*/
+    HostEdit = new QLineEdit(this);
+    HostEdit->setMaximumWidth(200);
+    HostEdit->setFixedHeight(30);
+    HostEdit->setToolTip(tr("Enter Ip:Port for connect"));
+    HostEdit->setText("127.0.0.1:7666");
 
      /*QINput Data To Esn*/
      CmdInput = new QLineEdit();
@@ -230,9 +246,23 @@ void Xdebuger::LoadToolBar(QHBoxLayout *lay)
      /*spacer*/
      QSpacerItem *Spitem = new QSpacerItem(0,0, QSizePolicy::Expanding, QSizePolicy::Minimum);
 
-     lay->addWidget(xPort);
-     lay->addWidget(xBaud);
-     lay->addWidget(btnRefresh);
+     if(UseIP)
+     {
+        lay->addWidget(HostEdit);
+
+        xPort->hide();
+        xBaud->hide();
+        btnRefresh->hide();
+     }
+     else
+     {
+        lay->addWidget(xPort);
+        lay->addWidget(xBaud);
+        lay->addWidget(btnRefresh);
+
+        HostEdit->hide();
+     }
+
      lay->addWidget(btnConnect);
      lay->addWidget(btnClean);
      lay->addSpacerItem(SendSpitem);
@@ -256,6 +286,12 @@ void Xdebuger::LockPortOpen(bool Look)
     StatusStatisticsLbl->setVisible(!Look);
     btnSend->setEnabled(!Look);
     CmdInput->setEnabled(!Look);
+}
+
+/*connect from IP*/
+void Xdebuger::handel_ConDisConAction_UseIP()
+{
+    qDebug() << "Connect to IP :)";
 }
 
 /*Btn Connect / DisConnect Action*/
