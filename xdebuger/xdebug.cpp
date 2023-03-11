@@ -230,7 +230,8 @@ void Xdebuger::LoadToolBar(QHBoxLayout *lay)
     HostEdit->setMaximumWidth(200);
     HostEdit->setFixedHeight(30);
     HostEdit->setToolTip(tr("Enter Ip:Port for connect"));
-    HostEdit->setText("127.0.0.1:7666");
+    QString lIP = xSettings->value("HIP","127.0.0.1:23").toString();
+    HostEdit->setText(lIP);
 
      /*QINput Data To Esn*/
      CmdInput = new QLineEdit();
