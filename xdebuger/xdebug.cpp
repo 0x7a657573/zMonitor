@@ -15,6 +15,7 @@
 #include <QSpacerItem>
 #include <QSplashScreen>
 #include <QLineEdit>
+#include <QHostAddress>
 
 Xdebuger::Xdebuger(QWidget *parent) : QWidget(parent)
 {
@@ -347,8 +348,32 @@ void Xdebuger::handel_tcp_disconnected()
 
 void Xdebuger::handel_ConDisConAction_UseIP()
 {
-    QString Host = tr("127.0.0.1");//HostEdit->text();
-    uint16_t Port = 7666;
+    uint32_t Port = 23;
+    QStringList HostPort = HostEdit->text().split(':');
+    if(HostPort.length()==2)
+        Port = HostPort[1].toInt();
+    QHostAddress address(HostPort[0]);
+
+    // Check if the address is valid
+    if (address.isNull())
+    {
+        QMessageBox::critical(this, tr("Error"), "Host is not valid");
+        return;
+    }
+
+    // Check if the port is valid
+    if (!(Port>0 && Port<65536))
+    {
+        QMessageBox::critical(this, tr("Error"), "Port is not valid");
+        return;
+    }
+
+    /*Stor Last validate host*/
+    if (xSettings->value("HIP").toString()!=HostEdit->text())
+        xSettings->setValue("HIP",HostEdit->text());
+
+    QString Host = address.toString();
+
 
     if(Port_IsOpen==false) /*we Need Open Port*/
     {
